@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using APIConsume.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -42,6 +43,25 @@ namespace APIConsume.Controllers
 
             return View(reservation);
         }
-        
+
+        public ViewResult AddReservation() => View();
+
+        [HttpPost]
+        public async Task<IActionResult> AddReservation(Reservation reservation)
+        {
+            Reservation receivedReservation = new Reservation();
+            using (var httpClient = new HttpClient())
+            {
+                StringContent content = new StringContent(JsonConvert.SerializeObject(reservation), 
+                    Encoding.UTF8, "application/json");
+                using (var response = await httpClient.PostAsync($"http://localhost:5001/api/Reservation", content))
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    receivedReservation = JsonConvert.DeserializeObject<Reservation>(apiResponse);
+                }
+            }
+
+            return View(receivedReservation);
+        }
     }
 }
